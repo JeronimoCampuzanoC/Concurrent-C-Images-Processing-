@@ -1,0 +1,1 @@
+gcc -o img.out img_base.c -pthread -lm
