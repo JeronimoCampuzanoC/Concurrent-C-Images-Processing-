@@ -1,1 +1,1 @@
-gcc -o img.out img_base.c -pthread -lm
+gcc -o img.out img_base.c functions/convolution.c -pthread -lm

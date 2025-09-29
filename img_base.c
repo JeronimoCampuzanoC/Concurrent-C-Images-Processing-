@@ -32,19 +32,7 @@
 #include "functions/convolution.h"
 #include "functions/resize.h"
 #include "functions/rotation.h"
-
-// QUÉ: Estructura para almacenar la imagen (ancho, alto, canales, píxeles).
-// CÓMO: Usa matriz 3D para píxeles (alto x ancho x canales), donde canales es
-// 1 (grises) o 3 (RGB). Píxeles son unsigned char (0-255).
-// POR QUÉ: Permite manejar tanto grises como color, con memoria dinámica para
-// flexibilidad y evitar desperdicio.
-typedef struct
-{
-    int ancho;                // Ancho de la imagen en píxeles
-    int alto;                 // Alto de la imagen en píxeles
-    int canales;              // 1 (escala de grises) o 3 (RGB)
-    unsigned char ***pixeles; // Matriz 3D: [alto][ancho][canales]
-} ImagenInfo;
+#include "functions/imagen_info.h"
 
 // QUÉ: Liberar memoria asignada para la imagen.
 // CÓMO: Libera cada fila y canal de la matriz 3D, luego el arreglo de filas y
@@ -304,7 +292,8 @@ void mostrarMenu()
     printf("2. Mostrar matriz de píxeles\n");
     printf("3. Guardar como PNG\n");
     printf("4. Ajustar brillo (+/- valor) concurrentemente\n");
-    printf("5. Salir\n");
+    printf("5. Aplicar filtro Gaussiano (desenfoque) concurrentemente\n");
+    printf("6. Salir\n");
     printf("Opción: ");
 }
 
@@ -395,7 +384,40 @@ int main(int argc, char *argv[])
             ajustarBrilloConcurrente(&imagen, delta);
             break;
         }
-        case 5: // Salir
+        case 5:
+        { // Aplicar filtro Gaussiano
+            int tamKernel, numHilos;
+            float sigma;
+            
+            printf("Tamaño del kernel (3, 5, 7, etc. - debe ser impar): ");
+            if (scanf("%d", &tamKernel) != 1) {
+                while (getchar() != '\n');
+                printf("Entrada inválida.\n");
+                continue;
+            }
+            
+            printf("Valor de sigma (desviación estándar, ej: 1.0): ");
+            if (scanf("%f", &sigma) != 1) {
+                while (getchar() != '\n');
+                printf("Entrada inválida.\n");
+                continue;
+            }
+            
+            printf("Número de hilos (1-8): ");
+            if (scanf("%d", &numHilos) != 1) {
+                while (getchar() != '\n');
+                printf("Entrada inválida.\n");
+                continue;
+            }
+            
+            while (getchar() != '\n'); // Limpiar buffer
+            
+            if (!aplicarConvolucionConcurrente(&imagen, tamKernel, sigma, numHilos)) {
+                printf("Error al aplicar filtro Gaussiano.\n");
+            }
+            break;
+        }
+        case 6: // Salir
             liberarImagen(&imagen);
             printf("¡Adiós!\n");
             return EXIT_SUCCESS;
