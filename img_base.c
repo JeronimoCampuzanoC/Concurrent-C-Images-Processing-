@@ -292,7 +292,7 @@ void mostrarMenu()
     printf("2. Mostrar matriz de píxeles\n");
     printf("3. Guardar como PNG\n");
     printf("4. Ajustar brillo (+/- valor) concurrentemente\n");
-    printf("5. Aplicar filtro Gaussiano (desenfoque) concurrentemente\n");
+    printf("5. Aplicar filtro Gaussiano (convolución de desenfoque) concurrentemente\n");
     printf("6. Redimensionar imagen (bilineal) concurrentemente\n");
     printf("7. Salir\n");
     printf("Opción: ");
