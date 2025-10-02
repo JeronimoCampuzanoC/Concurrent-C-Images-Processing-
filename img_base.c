@@ -293,7 +293,8 @@ void mostrarMenu()
     printf("3. Guardar como PNG\n");
     printf("4. Ajustar brillo (+/- valor) concurrentemente\n");
     printf("5. Aplicar filtro Gaussiano (desenfoque) concurrentemente\n");
-    printf("6. Salir\n");
+    printf("6. Redimensionar imagen (bilineal) concurrentemente\n");
+    printf("7. Salir\n");
     printf("Opción: ");
 }
 
@@ -389,21 +390,21 @@ int main(int argc, char *argv[])
             int tamKernel, numHilos;
             float sigma;
             
-            printf("Tamaño del kernel (3, 5, 7, etc. - debe ser impar): ");
+            printf("Tamaño del kernel (Debe ser impar)):");
             if (scanf("%d", &tamKernel) != 1) {
                 while (getchar() != '\n');
                 printf("Entrada inválida.\n");
                 continue;
             }
             
-            printf("Valor de sigma (desviación estándar, ej: 1.0): ");
+            printf("Valor de sigma (1.0, 2.0, 3.0, 4.0, 5.0): ");
             if (scanf("%f", &sigma) != 1) {
                 while (getchar() != '\n');
                 printf("Entrada inválida.\n");
                 continue;
             }
             
-            printf("Número de hilos (1-8): ");
+            printf("Número de hilos (1-4): ");
             if (scanf("%d", &numHilos) != 1) {
                 while (getchar() != '\n');
                 printf("Entrada inválida.\n");
@@ -417,7 +418,35 @@ int main(int argc, char *argv[])
             }
             break;
         }
-        case 6: // Salir
+        case 6:
+        { // Redimensionar imagen (bilineal)
+            int nuevoAncho, nuevoAlto, numHilos;
+            printf("Nuevo ancho: ");
+            if (scanf("%d", &nuevoAncho) != 1) {
+                while (getchar() != '\n');
+                printf("Entrada inválida.\n");
+                continue;
+            }
+            printf("Nuevo alto: ");
+            if (scanf("%d", &nuevoAlto) != 1) {
+                while (getchar() != '\n');
+                printf("Entrada inválida.\n");
+                continue;
+            }
+            printf("Número de hilos (1-4): ");
+            if (scanf("%d", &numHilos) != 1) {
+                while (getchar() != '\n');
+                printf("Entrada inválida.\n");
+                continue;
+            }
+            while (getchar() != '\n'); // Limpiar buffer
+
+            if (!resizeBilinealConcurrente(&imagen, nuevoAncho, nuevoAlto, numHilos)) {
+                printf("Error al redimensionar imagen.\n");
+            }
+            break;
+        }
+        case 7: // Salir
             liberarImagen(&imagen);
             printf("¡Adiós!\n");
             return EXIT_SUCCESS;

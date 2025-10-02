@@ -3,9 +3,7 @@
 #include <math.h>
 #include <string.h>
 
-// QUÉ: Genera un kernel Gaussiano para filtro de desenfoque.
-// CÓMO: Usa la fórmula matemática de la distribución Gaussiana 2D.
-// POR QUÉ: El kernel Gaussiano suaviza la imagen eliminando ruido y detalles finos.
+
 float** generarKernelGaussiano(int tamKernel, float sigma)
 {
     // Asignar memoria para el kernel
@@ -55,9 +53,7 @@ float** generarKernelGaussiano(int tamKernel, float sigma)
     return kernel;
 }
 
-// QUÉ: Libera la memoria asignada para el kernel.
-// CÓMO: Libera cada fila y luego el arreglo de filas.
-// POR QUÉ: Evita fugas de memoria al limpiar recursos.
+
 void liberarKernel(float **kernel, int tamKernel)
 {
     if (kernel) {
@@ -68,9 +64,7 @@ void liberarKernel(float **kernel, int tamKernel)
     }
 }
 
-// QUÉ: Aplica convolución en un rango de filas (para hilos).
-// CÓMO: Para cada píxel en el rango, multiplica con el kernel y maneja bordes.
-// POR QUÉ: Procesa píxeles en paralelo para demostrar concurrencia.
+
 void* convolucionHilo(void* args)
 {
     ConvolucionArgs *cArgs = (ConvolucionArgs*)args;
@@ -112,9 +106,7 @@ void* convolucionHilo(void* args)
     return NULL;
 }
 
-// QUÉ: Aplica convolución Gaussiana usando múltiples hilos.
-// CÓMO: Divide las filas entre hilos, genera kernel, aplica convolución y sincroniza.
-// POR QUÉ: Usa concurrencia para acelerar el procesamiento y enseñar hilos.
+
 int aplicarConvolucionConcurrente(ImagenInfo* info, int tamKernel, float sigma, int numHilos)
 {
     if (!info->pixeles) {
@@ -127,8 +119,8 @@ int aplicarConvolucionConcurrente(ImagenInfo* info, int tamKernel, float sigma, 
         return 0;
     }
     
-    if (numHilos < 1 || numHilos > 8) {
-        fprintf(stderr, "Número de hilos debe estar entre 1 y 8\n");
+    if (numHilos < 1 || numHilos > 4) {
+        fprintf(stderr, "Número de hilos debe estar entre 1 y 4\n");
         return 0;
     }
     
