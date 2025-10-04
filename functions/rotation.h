@@ -4,16 +4,7 @@
 // QUÉ: Estructura para almacenar información de la imagen.
 // CÓMO: Contiene dimensiones, canales y matriz de píxeles 3D.
 // POR QUÉ: Necesitamos la definición completa para las funciones.
-#ifndef IMAGENINFO_DEFINED
-#define IMAGENINFO_DEFINED
-typedef struct
-{
-    int ancho;                // Ancho de la imagen en píxeles
-    int alto;                 // Alto de la imagen en píxeles
-    int canales;              // 1 (escala de grises) o 3 (RGB)
-    unsigned char ***pixeles; // Matriz 3D: [alto][ancho][canales]
-} ImagenInfo;
-#endif
+#include "imagen_info.h"
 
 // QUÉ: Estructura para pasar argumentos a los hilos de rotación.
 // CÓMO: Contiene matrices origen/destino, dimensiones, ángulo y rango de trabajo.

@@ -28,9 +28,9 @@
 #include "stb_image_write.h"
 
 // Include function headers
-// #include "functions/border.h"
-// #include "functions/convolution.h"
-// #include "functions/resize.h"
+#include "functions/border.h"
+#include "functions/convolution.h"
+#include "functions/resize.h"
 #include "functions/rotation.h"
 
 // QUÉ: Estructura para almacenar la imagen (ancho, alto, canales, píxeles).
@@ -38,16 +38,6 @@
 // 1 (grises) o 3 (RGB). Píxeles son unsigned char (0-255).
 // POR QUÉ: Permite manejar tanto grises como color, con memoria dinámica para
 // flexibilidad y evitar desperdicio.
-#ifndef IMAGENINFO_DEFINED
-#define IMAGENINFO_DEFINED
-typedef struct
-{
-    int ancho;                // Ancho de la imagen en píxeles
-    int alto;                 // Alto de la imagen en píxeles
-    int canales;              // 1 (escala de grises) o 3 (RGB)
-    unsigned char ***pixeles; // Matriz 3D: [alto][ancho][canales]
-} ImagenInfo;
-#endif
 
 // QUÉ: Liberar memoria asignada para la imagen.
 // CÓMO: Libera cada fila y canal de la matriz 3D, luego el arreglo de filas y
@@ -307,8 +297,12 @@ void mostrarMenu()
     printf("2. Mostrar matriz de píxeles\n");
     printf("3. Guardar como PNG\n");
     printf("4. Ajustar brillo (+/- valor) concurrentemente\n");
-    printf("5. Rotar imagen (ángulo en grados)\n");
-    printf("6. Salir\n");
+    printf("5. Convolucion(Desenfoque Gaussino)\n");
+    printf("6. Rotar imagen (ángulo en grados)\n");
+    printf("7. Deteccion de bordes\n");
+    printf("8. Redimensionar imagen(bilineal)\n");
+
+    printf("9. Salir\n");
     printf("Opción: ");
 }
 
@@ -400,6 +394,48 @@ int main(int argc, char *argv[])
             break;
         }
         case 5:
+        { // Aplicar filtro Gaussiano
+            int tamKernel, numHilos;
+            float sigma;
+
+            printf("Tamaño del kernel (Debe ser impar)):");
+            if (scanf("%d", &tamKernel) != 1)
+            {
+                while (getchar() != '\n')
+                    ;
+                printf("Entrada inválida.\n");
+                continue;
+            }
+
+            printf("Valor de sigma (1.0, 2.0, 3.0, 4.0, 5.0): ");
+            if (scanf("%f", &sigma) != 1)
+            {
+                while (getchar() != '\n')
+                    ;
+                printf("Entrada inválida.\n");
+                continue;
+            }
+
+            printf("Número de hilos (1-4): ");
+            if (scanf("%d", &numHilos) != 1)
+            {
+                while (getchar() != '\n')
+                    ;
+                printf("Entrada inválida.\n");
+                continue;
+            }
+
+            while (getchar() != '\n')
+                ; // Limpiar buffer
+
+            if (!aplicarConvolucionConcurrente(&imagen, tamKernel, sigma, numHilos))
+            {
+                printf("Error al aplicar filtro Gaussiano.\n");
+            }
+            break;
+        }
+
+        case 6:
         { // Rotar imagen
             float angulo;
             printf("Ángulo de rotación en grados (0-360): ");
@@ -415,7 +451,61 @@ int main(int argc, char *argv[])
             rotarImagenConcurrente(&imagen, angulo);
             break;
         }
-        case 6: // Salir
+
+        case 7:
+        {
+            int n;
+            printf("Número de hilos (>=1): ");
+            if (scanf("%d", &n) != 1)
+            {
+                while (getchar() != '\n')
+                    ;
+                printf("Entrada inválida.\n");
+                break;
+            }
+            while (getchar() != '\n')
+                ;
+            if (!detectarBordesSobel(&imagen, n))
+                printf("Error aplicando Sobel.\n");
+            break;
+        }
+        case 8:
+        { // Redimensionar imagen (bilineal)
+            int nuevoAncho, nuevoAlto, numHilos;
+            printf("Nuevo ancho: ");
+            if (scanf("%d", &nuevoAncho) != 1)
+            {
+                while (getchar() != '\n')
+                    ;
+                printf("Entrada inválida.\n");
+                continue;
+            }
+            printf("Nuevo alto: ");
+            if (scanf("%d", &nuevoAlto) != 1)
+            {
+                while (getchar() != '\n')
+                    ;
+                printf("Entrada inválida.\n");
+                continue;
+            }
+            printf("Número de hilos (1-4): ");
+            if (scanf("%d", &numHilos) != 1)
+            {
+                while (getchar() != '\n')
+                    ;
+                printf("Entrada inválida.\n");
+                continue;
+            }
+            while (getchar() != '\n')
+                ; // Limpiar buffer
+
+            if (!resizeBilinealConcurrente(&imagen, nuevoAncho, nuevoAlto, numHilos))
+            {
+                printf("Error al redimensionar imagen.\n");
+            }
+            break;
+        }
+        case 9: // Salir
             liberarImagen(&imagen);
             printf("¡Adiós!\n");
             return EXIT_SUCCESS;

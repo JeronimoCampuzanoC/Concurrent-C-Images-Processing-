@@ -4,13 +4,25 @@
 // Include necessary headers
 #include <stdio.h>
 #include <stdlib.h>
-
-// Forward declaration of ImagenInfo structure
-// (Structure definition should be in main file to avoid redefinition)
-struct ImagenInfo;
-typedef struct ImagenInfo ImagenInfo;
+#include "imagen_info.h"
+#include <pthread.h>
+#include <math.h>
 
 // Function declarations for resize operations
-// TODO: Add resize function declarations here
+typedef struct
+{
+    unsigned char ***srcPixeles;
+    unsigned char ***dstPixeles;
+    int srcAncho;
+    int srcAlto;
+    int canales;
+    int dstAncho;
+    int dstAlto;
+    int filaInicio;
+    int filaFin; // exclusivo
+} ResizeArgs;
+
+
+int resizeBilinealConcurrente(ImagenInfo *info, int nuevoAncho, int nuevoAlto, int numHilos);
 
 #endif // RESIZE_H

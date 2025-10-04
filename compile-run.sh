@@ -1,1 +1,1 @@
-gcc -o img.out img_base.c functions/rotation.c -pthread -lm
+gcc -o img.out img_base.c functions/rotation.c functions/resize.c functions/border.c functions/convolution.c  -pthread -lm
