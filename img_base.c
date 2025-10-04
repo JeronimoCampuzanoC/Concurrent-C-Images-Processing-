@@ -38,7 +38,7 @@
 // 1 (grises) o 3 (RGB). Píxeles son unsigned char (0-255).
 // POR QUÉ: Permite manejar tanto grises como color, con memoria dinámica para
 // flexibilidad y evitar desperdicio.
-typedef struct
+typedef struct ImagenInfo
 {
     int ancho;                // Ancho de la imagen en píxeles
     int alto;                 // Alto de la imagen en píxeles
@@ -304,7 +304,8 @@ void mostrarMenu()
     printf("2. Mostrar matriz de píxeles\n");
     printf("3. Guardar como PNG\n");
     printf("4. Ajustar brillo (+/- valor) concurrentemente\n");
-    printf("5. Salir\n");
+    printf("5. Bordes\n");
+    printf("6. Salir\n");
     printf("Opción: ");
 }
 
@@ -395,7 +396,24 @@ int main(int argc, char *argv[])
             ajustarBrilloConcurrente(&imagen, delta);
             break;
         }
-        case 5: // Salir
+        case 5:
+        { // Sobel
+            int n;
+            printf("Número de hilos (>=1): ");
+            if (scanf("%d", &n) != 1)
+            {
+                while (getchar() != '\n')
+                    ;
+                printf("Entrada inválida.\n");
+                break;
+            }
+            while (getchar() != '\n')
+                ;
+            if (!detectarBordesSobel(&imagen, n))
+                printf("Error aplicando Sobel.\n");
+            break;
+        }
+        case 6: // Salir
             liberarImagen(&imagen);
             printf("¡Adiós!\n");
             return EXIT_SUCCESS;
