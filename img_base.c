@@ -28,9 +28,9 @@
 #include "stb_image_write.h"
 
 // Include function headers
-#include "functions/border.h"
-#include "functions/convolution.h"
-#include "functions/resize.h"
+// #include "functions/border.h"
+// #include "functions/convolution.h"
+// #include "functions/resize.h"
 #include "functions/rotation.h"
 
 // QUÉ: Estructura para almacenar la imagen (ancho, alto, canales, píxeles).
@@ -38,6 +38,8 @@
 // 1 (grises) o 3 (RGB). Píxeles son unsigned char (0-255).
 // POR QUÉ: Permite manejar tanto grises como color, con memoria dinámica para
 // flexibilidad y evitar desperdicio.
+#ifndef IMAGENINFO_DEFINED
+#define IMAGENINFO_DEFINED
 typedef struct
 {
     int ancho;                // Ancho de la imagen en píxeles
@@ -45,6 +47,7 @@ typedef struct
     int canales;              // 1 (escala de grises) o 3 (RGB)
     unsigned char ***pixeles; // Matriz 3D: [alto][ancho][canales]
 } ImagenInfo;
+#endif
 
 // QUÉ: Liberar memoria asignada para la imagen.
 // CÓMO: Libera cada fila y canal de la matriz 3D, luego el arreglo de filas y
@@ -304,7 +307,8 @@ void mostrarMenu()
     printf("2. Mostrar matriz de píxeles\n");
     printf("3. Guardar como PNG\n");
     printf("4. Ajustar brillo (+/- valor) concurrentemente\n");
-    printf("5. Salir\n");
+    printf("5. Rotar imagen (ángulo en grados)\n");
+    printf("6. Salir\n");
     printf("Opción: ");
 }
 
@@ -395,7 +399,23 @@ int main(int argc, char *argv[])
             ajustarBrilloConcurrente(&imagen, delta);
             break;
         }
-        case 5: // Salir
+        case 5:
+        { // Rotar imagen
+            float angulo;
+            printf("Ángulo de rotación en grados (0-360): ");
+            if (scanf("%f", &angulo) != 1)
+            {
+                while (getchar() != '\n')
+                    ;
+                printf("Entrada inválida.\n");
+                continue;
+            }
+            while (getchar() != '\n')
+                ;
+            rotarImagenConcurrente(&imagen, angulo);
+            break;
+        }
+        case 6: // Salir
             liberarImagen(&imagen);
             printf("¡Adiós!\n");
             return EXIT_SUCCESS;
