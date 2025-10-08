@@ -2,11 +2,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <pthread.h>
-#include <math.h>
-
-#ifndef M_PI
-#define M_PI 3.14159265358979323846
-#endif
+#include <math.h> 
 
 unsigned char ***asignarMatriz(int alto, int ancho, int canales)
 {
@@ -84,41 +80,44 @@ void liberarMatriz(unsigned char ***matriz, int alto, int ancho)
 void *rotarImagenHilo(void *args)
 {
     RotacionArgs *rArgs = (RotacionArgs *)args;
+    int angulo = (int)rArgs->angulo; // Convertir a entero (90, 180, 270)
 
     for (int y = rArgs->inicioY; y < rArgs->finY; y++)
     {
         for (int x = 0; x < rArgs->anchoDestino; x++)
         {
+            int xOrigen, yOrigen;
 
-            float xRelativo = x - rArgs->centroXDestino;
-            float yRelativo = y - rArgs->centroYDestino;
-
-            float xOriginal = xRelativo * rArgs->cosAngulo + yRelativo * rArgs->sinAngulo;
-            float yOriginal = -xRelativo * rArgs->sinAngulo + yRelativo * rArgs->cosAngulo;
-
-            xOriginal += rArgs->centroXOrigen;
-            yOriginal += rArgs->centroYOrigen;
-
-            if (xOriginal >= 0 && xOriginal < rArgs->anchoOrigen - 1 &&
-                yOriginal >= 0 && yOriginal < rArgs->altoOrigen - 1)
+            // Mapeo directo de coordenadas según el ángulo
+            switch (angulo)
             {
+            case 90:
+                // 90° horario: (x,y) -> (y, alto-1-x)
+                xOrigen = y;
+                yOrigen = rArgs->anchoDestino - 1 - x;
+                break;
+            case 180:
+                // 180°: (x,y) -> (ancho-1-x, alto-1-y)
+                xOrigen = rArgs->anchoDestino - 1 - x;
+                yOrigen = rArgs->altoDestino - 1 - y;
+                break;
+            case 270:
+                // 270° horario: (x,y) -> (alto-1-y, x)
+                xOrigen = rArgs->altoDestino - 1 - y;
+                yOrigen = x;
+                break;
+            default:
+                continue; // Saltar píxel si ángulo no válido
+            }
 
-                int x1 = (int)xOriginal;
-                int y1 = (int)yOriginal;
-                int x2 = x1 + 1;
-                int y2 = y1 + 1;
-
-                float dx = xOriginal - x1;
-                float dy = yOriginal - y1;
-
+            // Verificar límites
+            if (xOrigen >= 0 && xOrigen < rArgs->anchoOrigen &&
+                yOrigen >= 0 && yOrigen < rArgs->altoOrigen)
+            {
+                // Copia directa del píxel (sin interpolación)
                 for (int c = 0; c < rArgs->canales; c++)
                 {
-                    float valor = (1 - dx) * (1 - dy) * rArgs->origen[y1][x1][c] +
-                                  dx * (1 - dy) * rArgs->origen[y1][x2][c] +
-                                  (1 - dx) * dy * rArgs->origen[y2][x1][c] +
-                                  dx * dy * rArgs->origen[y2][x2][c];
-
-                    rArgs->destino[y][x][c] = (unsigned char)(valor + 0.5); // Redondeo
+                    rArgs->destino[y][x][c] = rArgs->origen[yOrigen][xOrigen][c];
                 }
             }
             // Si está fuera de límites, el píxel queda negro (inicializado en asignarMatriz)
@@ -135,53 +134,40 @@ void rotarImagenConcurrente(ImagenInfo *info, float angulo)
         return;
     }
 
-    angulo = fmod(angulo, 360.0f);
-    if (angulo < 0)
-        angulo += 360.0f;
-    float anguloRad = angulo * M_PI / 180.0f;
+    // Normalizar ángulo y redondear al múltiplo de 90 más cercano
+    int anguloInt = ((int)(angulo + 45) / 90) * 90;
+    anguloInt = anguloInt % 360;
+    if (anguloInt < 0)
+        anguloInt += 360;
 
-    printf("Rotando imagen %.1f grados...\n", angulo);
-
-    float cosAngulo = cos(anguloRad);
-    float sinAngulo = sin(anguloRad);
-
-    float esquinas[4][2] = {
-        {0, 0},
-        {info->ancho - 1, 0},
-        {info->ancho - 1, info->alto - 1},
-        {0, info->alto - 1}};
-
-    float minX = 0, maxX = 0, minY = 0, maxY = 0;
-    float centroXOrig = (info->ancho - 1) / 2.0f;
-    float centroYOrig = (info->alto - 1) / 2.0f;
-
-    for (int i = 0; i < 4; i++)
+    // Validar que sea múltiplo de 90
+    if (anguloInt != 90 && anguloInt != 180 && anguloInt != 270)
     {
-        float x = esquinas[i][0] - centroXOrig;
-        float y = esquinas[i][1] - centroYOrig;
-        float xRot = x * cosAngulo - y * sinAngulo;
-        float yRot = x * sinAngulo + y * cosAngulo;
-
-        if (i == 0)
-        {
-            minX = maxX = xRot;
-            minY = maxY = yRot;
-        }
-        else
-        {
-            if (xRot < minX)
-                minX = xRot;
-            if (xRot > maxX)
-                maxX = xRot;
-            if (yRot < minY)
-                minY = yRot;
-            if (yRot > maxY)
-                maxY = yRot;
-        }
+        printf("Error: Solo se soportan rotaciones de 90°, 180° y 270°.\n");
+        printf("Ángulo %.1f° redondeado a %d° no es válido.\n", angulo, anguloInt);
+        return;
     }
 
-    int nuevoAncho = (int)(maxX - minX + 1);
-    int nuevoAlto = (int)(maxY - minY + 1);
+    printf("Rotando imagen %d grados...\n", anguloInt);
+
+    // Calcular nuevas dimensiones según el ángulo
+    int nuevoAncho, nuevoAlto;
+    switch (anguloInt)
+    {
+    case 90:
+    case 270:
+        // Para 90° y 270°, intercambiar ancho y alto
+        nuevoAncho = info->alto;
+        nuevoAlto = info->ancho;
+        break;
+    case 180:
+        // Para 180°, las dimensiones se mantienen
+        nuevoAncho = info->ancho;
+        nuevoAlto = info->alto;
+        break;
+    default:
+        return; 
+    }
 
     printf("Dimensiones: %dx%d → %dx%d\n", info->ancho, info->alto, nuevoAncho, nuevoAlto);
 
@@ -197,9 +183,6 @@ void rotarImagenConcurrente(ImagenInfo *info, float angulo)
     RotacionArgs args[numHilos];
     int filasPorHilo = (int)ceil((double)nuevoAlto / numHilos);
 
-    int centroXDestino = nuevoAncho / 2;
-    int centroYDestino = nuevoAlto / 2;
-
     for (int i = 0; i < numHilos; i++)
     {
         args[i].origen = info->pixeles;
@@ -209,15 +192,9 @@ void rotarImagenConcurrente(ImagenInfo *info, float angulo)
         args[i].anchoDestino = nuevoAncho;
         args[i].altoDestino = nuevoAlto;
         args[i].canales = info->canales;
-        args[i].angulo = anguloRad;
+        args[i].angulo = (float)anguloInt;
         args[i].inicioY = i * filasPorHilo;
         args[i].finY = (i + 1) * filasPorHilo < nuevoAlto ? (i + 1) * filasPorHilo : nuevoAlto;
-        args[i].cosAngulo = cosAngulo;
-        args[i].sinAngulo = sinAngulo;
-        args[i].centroXOrigen = (int)centroXOrig;
-        args[i].centroYOrigen = (int)centroYOrig;
-        args[i].centroXDestino = centroXDestino;
-        args[i].centroYDestino = centroYDestino;
 
         if (pthread_create(&hilos[i], NULL, rotarImagenHilo, &args[i]) != 0)
         {
