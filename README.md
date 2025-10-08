@@ -49,3 +49,8 @@ Guardar imagen con opcion 3
 Nuevo ancho: 500
 Nuevo alto: 500
 Número de hilos (1-4): 4
+
+
+# Sistema utilizado
+<img width="968" height="517" alt="image" src="https://github.com/user-attachments/assets/376e5cf9-7c45-4d14-b26e-cfc119662add" />
+
