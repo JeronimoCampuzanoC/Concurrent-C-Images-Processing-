@@ -1,5 +1,12 @@
 # Concurrent-C-Images-Processing-
 
+## Integrantes
+Realizado por Juan Sebastian Lizcano, Andres Perez, Jeronimo Campuzano.
+
+## Descripción
+
+Programa avanzado de procesamiento de imágenes PNG en C que utiliza concurrencia con pthreads para acelerar operaciones matriciales complejas. Incluye funcionalidades base como carga/guardado de imágenes y nuevas implementaciones de rotación concurrente.
+
 ## Descripción
 
 Programa avanzado de procesamiento de imágenes PNG en C que utiliza concurrencia con pthreads para acelerar operaciones matriciales complejas. Incluye funcionalidades base como carga/guardado de imágenes y nuevas implementaciones de rotación concurrente.
